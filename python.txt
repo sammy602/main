@@ -1,0 +1,416 @@
+Aim: Document Indexing and Retrieval 
+●	Implement an inverted index construction algorithm. 
+●	Build a simple document retrieval system using the constructed index.  
+CODE:
+docs = {1:"data mining", 2:"machine learning", 3:"data science"}
+
+index = {}
+
+# Build Inverted Index
+for id,text in docs.items():
+    for word in text.split():
+        index.setdefault(word,[]).append(id)
+
+# Search
+q = input("Enter word: ")
+print("Docs:", index.get(q,"Not found"))
+ 
+ OUTPUT:
+Enter word: data
+Docs: [1, 3]
+____________________________________________________________________________________
+prac2Aim: Retrieval Models 
+a)	Implement the Boolean retrieval model and process queries. 
+CODE
+documents = {
+     1: "this is the first document",
+    2: "this document is the second document",
+    3: "and this is the third one",
+    4: "is this the first document"
+}
+
+index = {}
+
+for i, text in documents.items():
+    for w in text.split():
+        index.setdefault(w, set()).add(i)
+
+q = input("Enter query (word1 AND/OR word2): ").split()
+
+w1, op, w2 = q[0], q[1].upper(), q[2]
+
+d1 = index.get(w1, set())
+d2 = index.get(w2, set())
+
+if op == "AND":
+    res = d1 & d2
+else:
+    res = d1 | d2
+
+print("Documents:", res)
+ 
+OUTPUT:
+Enter query (word1 AND/OR word2): first AND document
+Documents: {1, 4}
+_______________________________
+b)Implement the vector space model with TF-IDF weighting and cosine similarity:
+ 
+ code:
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+documents = [
+ "this is the first document",
+ "this document is the second document",
+ "and this is the third one",
+ "is this the first document"
+]
+
+query = ["first document"]
+
+tf = TfidfVectorizer()
+X = tf.fit_transform(documents + query)
+
+sim = cosine_similarity(X[-1], X[:-1])
+
+print("Similarity:", sim)
+OUTPUT:
+Similarity: [[0.74 0.48 0.19 0.91]]
+ 
+c).	Implement cosine similarity to find similarity between following query and document. [20] query—"python programming" document=""Document about python programming language and data analysis."
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+query = "python programming"
+document = "Document about python programming language and data analysis."
+
+texts = [query, document]
+
+tfidf = TfidfVectorizer()
+X = tfidf.fit_transform(texts)
+
+similarity = cosine_similarity(X[0], X[1])
+
+print("Cosine Similarity:", similarity[0][0])
+OUTPUT:
+Cosine Similarity: 0.52
+______________________________________________________________________________________________________________________
+
+prac3)Spelling Correction in IR Systems 
+a)●	Develop a spelling correction module using edit distance algorithms
+b)●	Integrate the spelling correction module into an information retrieval system. 
+def edit_distance(a,b):
+    dp=[[0]*(len(b)+1) for _ in range(len(a)+1)]
+
+    for i in range(len(a)+1): dp[i][0]=i
+    for j in range(len(b)+1): dp[0][j]=j
+
+    for i in range(1,len(a)+1):
+        for j in range(1,len(b)+1):
+            cost=0 if a[i-1]==b[j-1] else 1
+            dp[i][j]=min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+cost)
+
+    return dp[-1][-1]
+
+words=["data","mining","machine","learning"]
+
+w=input("Enter word: ")
+
+print("Correction:",min(words,key=lambda x:edit_distance(w,x)))
+OUTPUT:
+Enter word: Dataa
+Correction: data
+ 
+ b)A.	Implement a spelling correction module using edit distance for the following dictionary:
+dictionary = ["spelling", "Correction" "algorithm", "information" , "retrieval", "system"]
+Integrate the spelling correction module into an information retrieval system. Provide suggestions for input word = "infinoration". 
+
+code
+dictionary = ["information", "retrieval", "system", "indexing", "document"]
+
+def distance(a,b):
+    c = 0
+    for i in range(min(len(a),len(b))):
+        if a[i] != b[i]:
+            c += 1
+    c += abs(len(a)-len(b))
+    return c
+
+word = input("Enter word: ")
+
+best = ""
+m = 100
+
+for d in dictionary:
+    dist = distance(word,d)
+    if dist < m:
+        m = dist
+        best = d
+
+print("Correct word:", best)
+OUTPUT:
+Enter word: infinoration
+Correct word: information
+ c)A.	Develop a spelling correction module using edit distance algorithms and tind the edit distance between strings "write" and "right". 
+code
+def edit_distance(a,b):
+    dp=[[0]*(len(b)+1) for _ in range(len(a)+1)]
+
+    for i in range(len(a)+1): dp[i][0]=i
+    for j in range(len(b)+1): dp[0][j]=j
+
+    for i in range(1,len(a)+1):
+        for j in range(1,len(b)+1):
+            cost=0 if a[i-1]==b[j-1] else 1
+            dp[i][j]=min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost)
+
+    return dp[len(a)][len(b)]
+
+s1="write"
+s2="right"
+
+print("Edit Distance:", edit_distance(s1,s2))
+OUTPUT:
+Edit Distance: 2
+_______________________________________________________________________________________________________
+ prac4)Aim: Evaluation Metrics for IR Systems 
+A) Calculate precision, recall, and F-measure for a given set of retrieval results.
+code
+relevant = {1, 2, 3, 4}
+retrieved = {2, 3, 5}
+
+tp = len(relevant & retrieved)
+
+precision = tp / len(retrieved)
+recall = tp / len(relevant)
+f1 = 2 * precision * recall / (precision + recall)
+
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1 Score:", f1)
+OUTPUT:
+Precision: 0.6666666666666666
+Recall: 0.75
+F1 Score: 0.7058823529411765
+
+b)Use an evaluation toolkit to measure average precision and other evaluation metrics.
+code
+from sklearn.metrics import average_precision_score
+
+# True relevance (1 = relevant, 0 = not relevant)
+y_true = [1, 0, 1, 1, 0]
+
+# System predicted scores
+y_scores = [0.9, 0.3, 0.8, 0.7, 0.2]
+
+ap = average_precision_score(y_true, y_scores)
+
+print("Average Precision:", ap)
+OUTPUT:
+Average Precision: 0.9166666666666666
+ 
+c)B.	Given a set of predicted binary labels (y_pred) and their corresponding true binary labels (y_true), evaluate the performance by calculating precision, recall, fl -score arul average precision of a binary classification model using standard metrics from scikit-learn module [20]
+code
+from sklearn.metrics import precision_score, recall_score, f1_score, average_precision_score
+
+y_true = [1,0,1,1,0]
+y_pred = [1,0,1,0,0]
+
+precision = precision_score(y_true, y_pred)
+recall = recall_score(y_true, y_pred)
+f1 = f1_score(y_true, y_pred)
+ap = average_precision_score(y_true, y_pred)
+
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1-score:", f1)
+print("Average Precision:", ap)
+OUTPUT:
+Precision: 1.0
+Recall: 0.6666666666666666
+F1-score: 0.8
+Average Precision: 0.8333333333333334
+
+d)A.	Write a program to calculate precision, recall and F-measure where true positive is 60, false positive is 30 and false negative is 20. [20] Recall- Recall- TP /TP+FN
+Precision -Precision — TP / TP+FP
+F-score = 2 * (Precision * Recall) / (Precision + Recall
+tp = 60
+fp = 30
+fn = 20
+precision = tp / (tp + fp)
+recall = tp / (tp + fn)
+f1 = 2 * (precision * recall) / (precision + recall)
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1 Score:", f1)
+OUTPUT:
+Precision: 0.6666666666666666
+Recall: 0.75
+F1 Score: 0.7058823529411765
+___________________________________________________________________________________________________
+prac5)Aim:-Text Categorization 
+A)	Implement a text classification algorithm (e.g., Naive Bayes or Support Vector Machines). 
+B)	Train the classifier on a labelled dataset and evaluate its performance. 
+code
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
+
+# Dataset
+docs = ["I love programming", "Python is great",
+        "Football is fun", "I like cricket"]
+labels = ["tech","tech","sports","sports"]
+
+# Convert text to vectors
+vec = CountVectorizer()
+X = vec.fit_transform(docs)
+
+# Train classifier
+model = MultinomialNB()
+model.fit(X, labels)
+
+# Test data
+test = ["Python programming", "cricket match"]
+X_test = vec.transform(test)
+
+pred = model.predict(X_test)
+print("Prediction:", pred)
+
+# Evaluate
+print("Accuracy:", accuracy_score(labels, model.predict(X)))
+OUTPUT:
+Prediction: ['tech' 'sports']
+Accuracy: 1.0
+ 
+ _________________________________________________________________________________________
+prac6)Aim: Clustering for Information Retrieval 
+Implement a clustering algorithm (e.g., K-means or hierarchical clustering). 
+Apply the clustering algorithm to a set of documents and evaluate the clustering results. 
+code:
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+
+docs = ["data mining", "machine learning", "artificial intelligence",
+        "football match", "cricket tournament"]
+
+X = TfidfVectorizer().fit_transform(docs)
+
+model = KMeans(n_clusters=2, random_state=0)
+model.fit(X)
+
+print("Clusters:", model.labels_)
+OUTPUT:
+Clusters: [0 0 0 1 1]
+  
+  __________________________________________________________________________________
+prac7)Aim: Web Crawling and Indexing 
+A)	Develop a web crawler to fetch and index web pages. 
+code
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://example.com"
+
+r = requests.get(url)
+soup = BeautifulSoup(r.text, "html.parser")
+
+index = []
+
+for link in soup.find_all("a"):
+    href = link.get("href")
+    if href:
+        index.append(href)
+
+print("Indexed Links:", index)
+OUTPUT:
+Indexed Links: ['https://www.iana.org/domains/example']
+ 
+ B)	Handle challenges such as robots.txt, dynamic content, and crawling delays. 
+code
+import time
+from urllib.robotparser import RobotFileParser
+from selenium import webdriver
+
+url = "https://example.com"
+
+# Check robots.txt
+rp = RobotFileParser()
+rp.set_url(url + "/robots.txt")
+rp.read()
+print("Allowed:", rp.can_fetch("*", url))
+
+# Crawling delay
+time.sleep(2)
+
+# Handle dynamic content
+driver = webdriver.Chrome()
+driver.get(url)
+print(driver.title)
+driver.quit()
+OUTPUT:
+Allowed: True
+Example Domain
+__________________________________________________________________________________
+prac8)Aim: Link Analysis and PageRank 
+A)	Implement the PageRank algorithm to rank web pages based on link analysis. 
+B)	Apply the PageRank algorithm to a small web graph and analyse the results. 
+code
+pages = {
+'A':['B','C'],
+'B':['C'],
+'C':['A'],
+'D':['C']
+}
+
+pr = {p:1/len(pages) for p in pages}
+d = 0.85
+
+for _ in range(10):
+    new = {}
+    for p in pages:
+        s = sum(pr[q]/len(pages[q]) for q in pages if p in pages[q])
+        new[p] = (1-d)/len(pages) + d*s
+    pr = new
+
+print("PageRank Values:")
+for p,v in pr.items():
+    print(p,round(v,3))
+OUTPUT:
+
+PageRank Values:
+A 0.372
+B 0.196
+C 0.394
+D 0.038
+ 
+ c)A.	Consider a web graph with the tOllowing link structure: [20]
+•	Page A has links to pages B and C.
+•	Page B has links to pages C and D.
+•	Page C has links to pages A and D.
+•	Page D has a link to page B
+Apply the PageRank algorithm and analyze the results.
+pages = {
+    'A': ['B', 'C'],
+    'B': ['C', 'D'],
+    'C': ['A', 'D'],
+    'D': ['B']
+}
+pr = {p: 1/len(pages) for p in pages}
+d = 0.85
+for _ in range(10):
+    new = {}
+    for p in pages:
+        s = sum(pr[q]/len(pages[q]) for q in pages if p in pages[q])
+        new[p] = (1-d)/len(pages) + d*s
+    pr = new
+print("PageRank Values:")
+for p, v in pr.items():
+    print(p, round(v, 3))
+OUTPUT:
+PageRank Values:
+A 0.333
+B 0.333
+C 0.167
+D 0.167
+
+ 
